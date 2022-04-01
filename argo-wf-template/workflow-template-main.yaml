@@ -7,7 +7,7 @@ metadata:
   annotations:
     workflows.argoproj.io/wfname: wf1
 spec:
-  serviceAccountName: workflow
+  #serviceAccountName: workflow
   metrics:
     prometheus:
       - name: exec_duration_gauge         # Metric name (will be prepended with "argo_workflows_")
