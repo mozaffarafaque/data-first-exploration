@@ -1,0 +1,122 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: hello-world-wf-global-arg
+  labels:
+    workflows.argoproj.io/creator: afaque
+  annotations:
+    workflows.argoproj.io/wfname: wf1
+spec:
+  serviceAccountName: workflow
+  metrics:
+    prometheus:
+      - name: exec_duration_gauge         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{workflow.duration}}"
+      - name: exec_duration_cpu         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{resourcesDuration.memory}}"
+      - name: exec_duration_memory         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{resourcesDuration.cpu}}"
+  entrypoint: whalesay
+  arguments:
+    parameters:
+      - name: global-parameter
+        value: hello
+      - name: message
+        value: afaque
+  templates:
+    - name: whalesay
+      steps:
+        - - name: hello0
+            templateRef:
+              name: workflow-template-submittable
+              template: whalesay-template
+        - - name: hello1
+            template: whalesay1
+          - name: hello2
+            template: gen-random-int
+          - name: hello3
+            templateRef:
+              name: workflow-template-submittable
+              template: whalesay-template-1
+    - name: whalesay1
+      container:
+        image: docker/whalesay
+        command: [cowsay]
+        args: ["hello world again"]
+      metrics:
+        prometheus:
+          - name: exec_duration_cpu         # Metric name (will be prepended with "argo_workflows_")
+            labels:                           # Labels are optional. Avoid cardinality explosion.
+              - key: namespace
+                value: "{{workflow.namespace}}"
+              - key: name
+                value: "{{workflow.name}}"
+                  #### Not working
+                  #- key: node
+                  #  value: "{{workflow.annotations.workflows.argoproj.io/node-id}}"
+            help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+            gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+              value: "{{resourcesDuration.cpu}}"
+    - name: gen-random-int
+      script:
+        image: python:alpine3.6
+        command: [python]
+        source: |
+          import random
+          import os
+          i = random.randint(1, 100)
+          print(i)
+          print("{{workflow.uid}}")
+          #print(os.environ)
+          var = {{workflow.parameters}}
+          print(var)
+      metrics:
+        prometheus:
+          - name: exec_duration_gauge         # Metric name (will be prepended with "argo_workflows_")
+            labels:                           # Labels are optional. Avoid cardinality explosion.
+              - key: namespace
+                value: "{{workflow.namespace}}"
+              - key: name
+                value: "{{workflow.name}}"
+            help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+            gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+              value: "{{workflow.duration}}"
+          - name: exec_duration_cpu         # Metric name (will be prepended with "argo_workflows_")
+            labels:                           # Labels are optional. Avoid cardinality explosion.
+              - key: namespace
+                value: "{{workflow.namespace}}"
+              - key: name
+                value: "{{workflow.name}}"
+            help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+            gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+              value: "{{resourcesDuration.memory}}"
+          - name: exec_duration_memory         # Metric name (will be prepended with "argo_workflows_")
+            labels:                           # Labels are optional. Avoid cardinality explosion.
+              - key: namespace
+                value: "{{workflow.namespace}}"
+              - key: name
+                value: "{{workflow.name}}"
+            help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+            gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+              value: "{{resourcesDuration.cpu}}"

@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-template-submittable
+spec:
+  arguments:
+    parameters:
+      - name: message
+  workflowMetadata:
+    labels:
+      owner: mozafaq
+  templates:
+    - name: whalesay-template
+      container:
+        image: docker/whalesay
+        command: [cowsay]
+        args: ["{{workflow.parameters.message}}"]
+    - name: whalesay-template-1
+      container:
+        image: docker/whalesay
+        command: [cowsay]
+        args: ["hello stupid"]
