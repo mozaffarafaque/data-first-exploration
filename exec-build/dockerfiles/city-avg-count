@@ -1,0 +1,5 @@
+FROM python:3.9
+
+RUN mkdir /app
+RUN echo "city-avg-count" > /app/appname
+COPY execution.py /app/

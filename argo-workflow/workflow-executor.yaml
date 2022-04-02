@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: mozafaq-test-workflow-global-arg
+  labels:
+    workflows.argoproj.io/creator: mozafaq
+  annotations:
+    workflows.argoproj.io/wfname: mozafaq-test-workflow1
+spec:
+  #serviceAccountName: workflow
+  metrics:
+    prometheus:
+      - name: exec_duration_gauge         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{workflow.duration}}"
+      - name: exec_duration_cpu         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{resourcesDuration.memory}}"
+      - name: exec_duration_memory         # Metric name (will be prepended with "argo_workflows_")
+        labels:                           # Labels are optional. Avoid cardinality explosion.
+          - key: namespace
+            value: "{{workflow.namespace}}"
+          - key: name
+            value: "{{workflow.name}}"
+        help: "Duration gauge by name"    # A help doc describing your metric. This is required.
+        gauge:                            # The metric type. Available are "gauge", "histogram", and "counter".
+          value: "{{resourcesDuration.cpu}}"
+  entrypoint: mozafaq-test-workflow-entrypoint
+  arguments:
+    parameters:
+      - name: arg0
+        value: "{{workflow.name}}"
+      - name: arg1
+        value: Hello
+      - name: arg2
+        value: Afaque
+
+  templates:
+    - name: mozafaq-test-workflow-entrypoint
+      steps:
+        - - name: account-city-amount-step
+            templateRef:
+              name: mozafaq-test-workflow-submittable
+              template: account-city-amount-template
+          - name: account-city-count-step
+            templateRef:
+              name: mozafaq-test-workflow-submittable
+              template: account-city-count-template
+
+        - - name: account-avg-count-step
+            templateRef:
+              name: mozafaq-test-workflow-submittable
+              template: account-avg-count-template
+          - name: account-city-avg-count-step
+            templateRef:
+              name: mozafaq-test-workflow-submittable
+              template: account-city-avg-count-template
+
+        - - name: city-avg-count-step
+            templateRef:
+              name: mozafaq-test-workflow-submittable
+              template: city-avg-count-template

@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: mozafaq-test-workflow-submittable
+spec:
+  arguments:
+    parameters:
+      - name: message
+  workflowMetadata:
+    labels:
+      owner: mozafaq
+  templates:
+    - name: account-city-amount-template
+      container:
+        image: mozafaq/account-city-amount:20220402.1
+        command: [/app/execution.py]
+        args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
+
+    - name: account-city-count-template
+      container:
+        image: mozafaq/account-city-count:20220402.1
+        command: [/app/execution.py]
+        args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
+
+    - name: account-avg-count-template
+      container:
+        image: mozafaq/account-avg-count:20220402.1
+        command: [/app/execution.py]
+        args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
+
+    - name: account-city-avg-count-template
+      container:
+        image: mozafaq/account-city-avg-count:20220402.1
+        command: [/app/execution.py]
+        args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
+
+    - name: city-avg-count-template
+      container:
+        image: mozafaq/city-avg-count:20220402.1
+        command: [/app/execution.py]
+        args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
