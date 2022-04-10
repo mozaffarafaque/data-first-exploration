@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: aws-sqs-data-first-sensor
+  namespace: data-first-argo-events-ns
+spec:
+  serviceAccountName: data-first-service-account
+  dependencies:
+    - name: test-data-first-dependency-name
+      eventSourceName: aws-sqs-data-first-event-source
+      eventName: data-first-events
+  triggers:
+    spec:
+    - template:
+        name: sqs-workflow
+        namespace: data-first-argo-events-ns
+        serviceAccountName: data-first-service-account
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: aws-sqs-workflow-
+                namespace: data-first-argo-events-ns
+              spec:
+                metadata:
+                  namespace: data-first-argo-events-ns
+                entrypoint: whalesay
+                arguments:
+                  parameters:
+                  - name: message
+                    # this is the value that should be overridden
+                    value: hello world
+                templates:
+                - name: whalesay
+                  inputs:
+                    parameters:
+                    - name: message
+                  container:
+                    image: docker/whalesay:latest
+                    command: [cowsay]
+                    args: ["{{inputs.parameters.message}}"]
+          parameters:
+            - src:
+                dependencyName: aws-sqs-data-first-event-source
+                dataKey: body
+              dest: spec.arguments.parameters.0.value
