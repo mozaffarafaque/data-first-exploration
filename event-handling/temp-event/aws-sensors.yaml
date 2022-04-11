@@ -21,23 +21,23 @@ spec:
               metadata:
                 generateName: aws-sqs-workflow-
               spec:
-                entrypoint: whalesay
+                entrypoint: entry-point-data-first-workflow
                 arguments:
                   parameters:
-                  - name: message
-                    # this is the value that should be overridden
-                    value: hello world
+                  - name: arg0
+                    value: "{{workflow.name}}"
+                  - name: arg1
+                    value: Hello2
+                  - name: arg2
+                    value: Afaque2
                 templates:
-                - name: whalesay
-                  inputs:
-                    parameters:
-                    - name: message
+                - name: entry-point-data-first-workflow
                   container:
-                    image: docker/whalesay:latest
-                    command: [cowsay]
-                    args: ["{{inputs.parameters.message}}"]
+                    image: mozafaq/account-city-amount:20220402.1
+                    command: [/app/execution.py]
+                    args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
           parameters:
             - src:
                 dependencyName: test-dep
                 dataKey: body
-              dest: spec.arguments.parameters.0.value
+              dest: spec.arguments.parameters.2.value
