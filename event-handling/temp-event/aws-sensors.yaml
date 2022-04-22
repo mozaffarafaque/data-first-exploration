@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Sensor
 metadata:
   name: aws-sqs
+  namespace: argo-events-ns-df
 spec:
   template:
     serviceAccountName: argo-events-sa
@@ -36,6 +37,13 @@ spec:
                     image: mozafaq/account-city-amount:20220402.1
                     command: [/app/execution.py]
                     args: ["{{workflow.parameters.arg0}}", "{{workflow.parameters.arg1}}", "{{workflow.parameters.arg2}}"]
+                    resources:
+                      requests:
+                        memory: "64Mi"
+                        cpu: "100m"
+                      limits:
+                        memory: "128Mi"
+                        cpu: "250m"
           parameters:
             - src:
                 dependencyName: test-dep
